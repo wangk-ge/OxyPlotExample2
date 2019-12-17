@@ -13,9 +13,11 @@ namespace OxyPlotExample2
     public partial class Form1 : Form
     {
         private FrameDecoder m_frameDecoder = new FrameDecoder();
+        private FlowSensor m_flowSensor = new FlowSensor();
         private KalmanFilter m_kalmanFilter = new KalmanFilter(0.001f, 0.3f, 1.0f, 0);
-        private DateTimeAxis m_xAxis; // X轴
+        private LinearAxis m_xAxis; // X轴
         private LinearAxis m_yAxis; // Y轴
+        private int m_X = 0;
 
         private PlotModel m_plotModel;
         private Random rand = new Random(); // 用来生成随机数
@@ -40,13 +42,14 @@ namespace OxyPlotExample2
             };
 
             //X轴
-            m_xAxis = new DateTimeAxis()
+            m_xAxis = new LinearAxis()
             {
                 MajorGridlineStyle = LineStyle.Solid,
                 MinorGridlineStyle = LineStyle.Dot,
-                IntervalLength = 80,
+                IntervalLength = 60,
                 IsZoomEnabled = true,
-                IsPanEnabled = true
+                IsPanEnabled = true,
+                Position = AxisPosition.Bottom
             };
             m_plotModel.Axes.Add(m_xAxis);
 
@@ -59,8 +62,7 @@ namespace OxyPlotExample2
                 Angle = 0,
                 IsZoomEnabled = true,
                 IsPanEnabled = true,
-                //Maximum = 100,
-                //Minimum = -100
+                Position = AxisPosition.Left
             };
             m_plotModel.Axes.Add(m_yAxis);
 
@@ -152,6 +154,7 @@ namespace OxyPlotExample2
                 }
             });
 #else
+#if false
             m_frameDecoder.WaveDataRespRecved += new FrameDecoder.WaveDataRecvHandler((byte channel, double value) => {
                 Console.WriteLine($"WaveDataRespRecved: {channel} {value}");
                 var delta = 1000 / 100;
@@ -190,7 +193,42 @@ namespace OxyPlotExample2
                     Thread.Sleep(delta);
                 }
             });
+#else
+            m_flowSensor.m_frameDecoder.WaveDataRespRecved += new FrameDecoder.WaveDataRecvHandler((byte channel, double value) => {
+                Console.WriteLine($"WaveDataRespRecved: {channel} {value}");
+
+                m_plotModel.Axes[0].Maximum = m_X + 1;
+
+                var lineSer1 = plotView1.Model.Series[0] as LineSeries;
+                lineSer1.Points.Add(new DataPoint(m_X, value));
+                if (lineSer1.Points.Count > 2000)
+                {
+                    lineSer1.Points.RemoveAt(0);
+                }
+
+                var lineSer2 = plotView1.Model.Series[1] as LineSeries;
+                lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)value)));
+                if (lineSer2.Points.Count > 2000)
+                {
+                    lineSer2.Points.RemoveAt(0);
+                }
+
+                m_X++;
+
+                m_plotModel.InvalidatePlot(true);
+            });
+
+            m_flowSensor.Open("COM4");
+
+            SendCmd("[ADC_START]");
+            SendCmd("[ADC_CAL]");
 #endif
-            }
+#endif
+        }
+        private async void SendCmd(string cmd)
+        {
+            string cmdResp = await m_flowSensor.ExcuteCmdAsync(cmd, 2000);
+            Console.WriteLine(cmdResp);
+        }
     }
 }
