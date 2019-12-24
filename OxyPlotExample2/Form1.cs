@@ -15,7 +15,7 @@ namespace OxyPlotExample2
         private FrameDecoder m_frameDecoder = new FrameDecoder();
         private FlowSensor m_flowSensor = new FlowSensor();
         private KalmanFilter m_kalmanFilter = new KalmanFilter(0.01f/*Q*/, 0.1f/*R*/, 1.0f/*P*/, 0);
-        private KalmanFilter m_kalmanFilter2 = new KalmanFilter(0.01f/*Q*/, 1.0f/*R*/, 10.0f/*P*/, 0);
+        private KalmanFilter m_kalmanFilter2 = new KalmanFilter(0.01f/*Q*/, 3.0f/*R*/, 10.0f/*P*/, 0);
         private LinearAxis m_xAxis; // X轴
         private LinearAxis m_yAxis; // Y轴
         private int m_X = 0;
@@ -62,7 +62,9 @@ namespace OxyPlotExample2
                 Angle = 0,
                 IsZoomEnabled = true,
                 IsPanEnabled = true,
-                Position = AxisPosition.Left
+                Position = AxisPosition.Left,
+                //Minimum = -1000,
+                //Maximum = 1000
             };
             m_plotModel.Axes.Add(m_yAxis);
 
@@ -101,7 +103,7 @@ namespace OxyPlotExample2
 
             plotView1.Model = m_plotModel;
 
-#if true
+#if false
             /* 通过文件获取数据 */
             m_frameDecoder.WaveDataRespRecved += new FrameDecoder.WaveDataRecvHandler((byte channel, double value) => {
                 Console.WriteLine($"WaveDataRespRecved: {channel} {value}");
@@ -148,21 +150,21 @@ namespace OxyPlotExample2
                 m_plotModel.Axes[0].Maximum = m_X + 1;
 
                 var lineSer1 = plotView1.Model.Series[0] as LineSeries;
-                lineSer1.Points.Add(new DataPoint(m_X, value));
+                lineSer1.Points.Add(new DataPoint(m_X, value / 1200));
                 if (lineSer1.Points.Count > 2000)
                 {
                     lineSer1.Points.RemoveAt(0);
                 }
 
                 var lineSer2 = plotView1.Model.Series[1] as LineSeries;
-                lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)value)));
+                lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)value) / 1200));
                 if (lineSer2.Points.Count > 2000)
                 {
                     lineSer2.Points.RemoveAt(0);
                 }
 
                 var lineSer3 = plotView1.Model.Series[2] as LineSeries;
-                lineSer3.Points.Add(new DataPoint(m_X, m_kalmanFilter2.Input((float)value)));
+                lineSer3.Points.Add(new DataPoint(m_X, m_kalmanFilter2.Input((float)value) / 1200));
                 if (lineSer3.Points.Count > 2000)
                 {
                     lineSer3.Points.RemoveAt(0);
@@ -174,16 +176,34 @@ namespace OxyPlotExample2
             });
 
             m_flowSensor.Open("COM4");
-
-            SendCmd("[ADC_START]");
-            SendCmd("[ADC_CAL]");
 #endif
         }
 
         private async void SendCmd(string cmd)
         {
+            this.textBoxInfo.AppendText($"Sned: {cmd} \r\n");
             string cmdResp = await m_flowSensor.ExcuteCmdAsync(cmd, 2000);
-            Console.WriteLine(cmdResp);
+            this.textBoxInfo.AppendText($"Revc: {cmdResp} \r\n");
+        }
+
+        private void buttonStart_Click(object sender, EventArgs e)
+        {
+            SendCmd("[ADC_START]");
+        }
+
+        private void buttonStop_Click(object sender, EventArgs e)
+        {
+            SendCmd("[ADC_STOP]");
+        }
+
+        private void buttonZero_Click(object sender, EventArgs e)
+        {
+            SendCmd("[ADC_CAL]");
+        }
+
+        private void buttonSend_Click(object sender, EventArgs e)
+        {
+            SendCmd(this.textBoxCmd.Text);
         }
     }
 }
