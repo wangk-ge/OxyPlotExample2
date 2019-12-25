@@ -14,10 +14,8 @@ namespace OxyPlotExample2
 {
     public partial class Form1 : Form
     {
-        private FrameDecoder m_frameDecoder = new FrameDecoder();
         private FlowSensor m_flowSensor = new FlowSensor();
-        private KalmanFilter m_kalmanFilter = new KalmanFilter(0.01f/*Q*/, 0.1f/*R*/, 1.0f/*P*/, 0);
-        private KalmanFilter m_kalmanFilter2 = new KalmanFilter(0.01f/*Q*/, 3.0f/*R*/, 10.0f/*P*/, 0);
+        private KalmanFilter m_kalmanFilter = new KalmanFilter(0.01f/*Q*/, 0.01f/*R*/, 1.0f/*P*/, 0);
         private LinearAxis m_xAxis; // X轴
         private LinearAxis m_yAxis; // Y轴
         private int m_X = 0;
@@ -124,18 +122,7 @@ namespace OxyPlotExample2
                 MarkerSize = 1,
                 MarkerStroke = OxyColors.DarkRed,
                 MarkerType = MarkerType.Circle,
-                Title = "Filter1"
-            };
-            m_plotModel.Series.Add(series);
-
-            series = new LineSeries()
-            {
-                Color = OxyColors.Blue,
-                StrokeThickness = 1,
-                MarkerSize = 1,
-                MarkerStroke = OxyColors.DarkBlue,
-                MarkerType = MarkerType.Circle,
-                Title = "Filter2"
+                Title = "Filter"
             };
             m_plotModel.Series.Add(series);
 
@@ -177,9 +164,6 @@ namespace OxyPlotExample2
             var lineSer2 = plotView1.Model.Series[1] as LineSeries;
             lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)val)));
 
-            var lineSer3 = plotView1.Model.Series[2] as LineSeries;
-            lineSer3.Points.Add(new DataPoint(m_X, m_kalmanFilter2.Input((float)val)));
-
             m_X++;
         }
 
@@ -205,17 +189,27 @@ namespace OxyPlotExample2
             if ("连接" == toolStripButtonOpen.Text)
             {
                 bool bRet = m_flowSensor.Open(toolStripComboBoxCom.Text);
-                this.toolStripButtonStart.Enabled = bRet;
-                this.toolStripButtonStop.Enabled = bRet;
-                this.toolStripButtonZero.Enabled = bRet;
+                toolStripButtonStart.Enabled = bRet;
+                toolStripButtonStop.Enabled = bRet;
+                toolStripButtonZero.Enabled = bRet;
+                toolStripButtonLoad.Enabled = !bRet;
+                toolStripButtonSave.Enabled = !bRet;
+                toolStripButtonClear.Enabled = !bRet;
+                toolStripButtonRefresh.Enabled = !bRet;
+                toolStripComboBoxCom.Enabled = !bRet;
                 toolStripButtonOpen.Text = bRet ? "断开" : "连接";
             }
             else
             {
                 m_flowSensor.Close();
-                this.toolStripButtonStart.Enabled = false;
-                this.toolStripButtonStop.Enabled = false;
-                this.toolStripButtonZero.Enabled = false;
+                toolStripButtonStart.Enabled = false;
+                toolStripButtonStop.Enabled = false;
+                toolStripButtonZero.Enabled = false;
+                toolStripButtonLoad.Enabled = true;
+                toolStripButtonSave.Enabled = true;
+                toolStripButtonClear.Enabled = true;
+                toolStripButtonRefresh.Enabled = true;
+                toolStripComboBoxCom.Enabled = true;
                 toolStripButtonOpen.Text = "连接";
             }
         }
@@ -314,6 +308,11 @@ namespace OxyPlotExample2
         private void toolStripButtonClear_Click(object sender, EventArgs e)
         {
             ClearAll();
+        }
+
+        private void numericUpDownR_ValueChanged(object sender, EventArgs e)
+        {
+            m_kalmanFilter.R = (float)decimal.ToDouble(numericUpDownR.Value);
         }
     }
 }

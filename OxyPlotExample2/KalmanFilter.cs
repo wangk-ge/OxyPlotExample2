@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace OxyPlotExample2
 {
     class KalmanFilter
     {
-        private float fQ; // process noise covariance
-        private float fR; // measurement noise covariance
-        private float fP; // error in estimate
         private float fX; // estimated value
         private float fK; // kalman gain
+
+        public float P { get; set; }
+
+        public float Q { get; set; }
+
+        public float R { get; set; }
 
         /*************************************************
         * Function: KALMAN_Init
@@ -28,9 +26,9 @@ namespace OxyPlotExample2
         *************************************************/
         public KalmanFilter(float fQ, float fR, float fP, float fInitialEstimate)
         {
-            this.fQ = fQ;
-            this.fR = fR;
-            this.fP = fP;
+            Q = fQ;
+            R = fR;
+            P = fP;
             fX = fInitialEstimate;
             fK = 0.0f;
         }
@@ -46,10 +44,10 @@ namespace OxyPlotExample2
         *************************************************/
         public float Input(float fMeasuredValue)
         {
-            fP = fP + fQ;
-            fK = fP / (fP + fR);
-            fX = fX + fK * (fMeasuredValue - fX);
-            fP = (1.0f - fK) * fP;
+            P += Q;
+            fK = P / (P + R);
+            fX += fK * (fMeasuredValue - fX);
+            P = (1.0f - fK) * P;
 
             return fX;
         }
