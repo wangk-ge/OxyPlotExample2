@@ -4,6 +4,7 @@ using OxyPlot.Axes;
 using OxyPlot.Series;
 using System;
 using System.IO;
+using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -27,8 +28,43 @@ namespace OxyPlotExample2
             InitializeComponent();
         }
 
+        private void EnumSerialPorts()
+        {
+            toolStripComboBoxCom.Items.Clear();
+
+            SerialPort _tempPort;
+            String[] Portname = SerialPort.GetPortNames();
+
+            //create a loop for each string in SerialPort.GetPortNames
+            foreach (string str in Portname)
+            {
+                try
+                {
+                    _tempPort = new SerialPort(str);
+                    _tempPort.Open();
+
+                    //if the port exist and we can open it
+                    if (_tempPort.IsOpen)
+                    {
+                        toolStripComboBoxCom.Items.Add(str);
+                        _tempPort.Close();
+                    }
+                }
+                //else we have no ports or can't open them display the 
+                //precise error of why we either don't have ports or can't open them
+                catch (Exception ex)
+                {
+                    //MessageBox.Show(ex.ToString(), "Error - No Ports available", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            toolStripComboBoxCom.SelectedIndex = 0;
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
+            EnumSerialPorts();
+
             // 定义Model
             m_plotModel = new PlotModel()
             {
@@ -186,24 +222,39 @@ namespace OxyPlotExample2
             this.textBoxInfo.AppendText($"Revc: {cmdResp} \r\n");
         }
 
-        private void buttonStart_Click(object sender, EventArgs e)
+        private void buttonSend_Click(object sender, EventArgs e)
+        {
+            SendCmd(this.textBoxCmd.Text);
+        }
+
+        private void toolStripButtonOpen_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripButtonStart_Click(object sender, EventArgs e)
         {
             SendCmd("[ADC_START]");
         }
 
-        private void buttonStop_Click(object sender, EventArgs e)
+        private void toolStripButtonStop_Click(object sender, EventArgs e)
         {
             SendCmd("[ADC_STOP]");
         }
 
-        private void buttonZero_Click(object sender, EventArgs e)
+        private void toolStripButtonZero_Click(object sender, EventArgs e)
         {
             SendCmd("[ADC_CAL]");
         }
 
-        private void buttonSend_Click(object sender, EventArgs e)
+        private void toolStripButtonSave_Click(object sender, EventArgs e)
         {
-            SendCmd(this.textBoxCmd.Text);
+
+        }
+
+        private void toolStripButtonLoad_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
