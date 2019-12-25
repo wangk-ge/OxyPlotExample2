@@ -45,6 +45,8 @@
             this.toolStripButtonSave = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonLoad = new System.Windows.Forms.ToolStripButton();
             this.toolStripComboBoxCom = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripButtonRefresh = new System.Windows.Forms.ToolStripButton();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.toolStrip1.SuspendLayout();
@@ -110,8 +112,10 @@
             // toolStrip1
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripLabel1,
             this.toolStripComboBoxCom,
             this.toolStripButtonOpen,
+            this.toolStripButtonRefresh,
             this.toolStripSeparator1,
             this.toolStripButtonStart,
             this.toolStripButtonStop,
@@ -208,6 +212,21 @@
             this.toolStripComboBoxCom.Name = "toolStripComboBoxCom";
             this.toolStripComboBoxCom.Size = new System.Drawing.Size(75, 25);
             // 
+            // toolStripLabel1
+            // 
+            this.toolStripLabel1.Name = "toolStripLabel1";
+            this.toolStripLabel1.Size = new System.Drawing.Size(44, 22);
+            this.toolStripLabel1.Text = "端口号";
+            // 
+            // toolStripButtonRefresh
+            // 
+            this.toolStripButtonRefresh.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButtonRefresh.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonRefresh.Image")));
+            this.toolStripButtonRefresh.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonRefresh.Name = "toolStripButtonRefresh";
+            this.toolStripButtonRefresh.Size = new System.Drawing.Size(36, 22);
+            this.toolStripButtonRefresh.Text = "刷新";
+            // 
             // Form1
             // 
             this.AcceptButton = this.buttonSend;
@@ -249,6 +268,8 @@
         private System.Windows.Forms.ToolStripButton toolStripButtonSave;
         private System.Windows.Forms.ToolStripButton toolStripButtonLoad;
         private System.Windows.Forms.ToolStripComboBox toolStripComboBoxCom;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel1;
+        private System.Windows.Forms.ToolStripButton toolStripButtonRefresh;
     }
 }
 

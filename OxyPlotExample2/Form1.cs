@@ -210,8 +210,6 @@ namespace OxyPlotExample2
 
                 m_plotModel.InvalidatePlot(true);
             });
-
-            m_flowSensor.Open("COM4");
 #endif
         }
 
@@ -229,7 +227,7 @@ namespace OxyPlotExample2
 
         private void toolStripButtonOpen_Click(object sender, EventArgs e)
         {
-
+            m_flowSensor.Open(toolStripComboBoxCom.Text);
         }
 
         private void toolStripButtonStart_Click(object sender, EventArgs e)
