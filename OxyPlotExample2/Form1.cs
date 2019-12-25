@@ -5,6 +5,7 @@ using OxyPlot.Series;
 using System;
 using System.IO;
 using System.IO.Ports;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -55,6 +56,7 @@ namespace OxyPlotExample2
                 catch (Exception ex)
                 {
                     //MessageBox.Show(ex.ToString(), "Error - No Ports available", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Console.WriteLine(ex);
                 }
             }
 
@@ -139,82 +141,55 @@ namespace OxyPlotExample2
 
             plotView1.Model = m_plotModel;
 
-#if false
-            /* 通过文件获取数据 */
-            m_frameDecoder.WaveDataRespRecved += new FrameDecoder.WaveDataRecvHandler((byte channel, double value) => {
-                Console.WriteLine($"WaveDataRespRecved: {channel} {value}");
-                m_plotModel.Axes[0].Maximum = m_X + 1;
-
-                var lineSer1 = plotView1.Model.Series[0] as LineSeries;
-                lineSer1.Points.Add(new DataPoint(m_X, value));
-
-                var lineSer2 = plotView1.Model.Series[1] as LineSeries;
-                lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)value)));
-
-                var lineSer3 = plotView1.Model.Series[2] as LineSeries;
-                lineSer3.Points.Add(new DataPoint(m_X, m_kalmanFilter2.Input((float)value)));
-
-                m_X++;
-
-                m_plotModel.InvalidatePlot(true);
-            });
-
-            Task.Factory.StartNew(() =>
-            {
-                StreamReader mysr = new StreamReader("H:\\CSharpWork\\OxyPlotExample2\\OxyPlotExample2\\2LPERS.txt", System.Text.Encoding.Default);
-                string strData = mysr.ReadToEnd();
-                mysr.Close();
-                mysr.Dispose();
-
-                string[] strDataArray = strData.Split(new char[] { ' ' });
-                foreach (var strVal in strDataArray)
-                {
-                    if (String.Empty == strVal)
-                    {
-                        continue;
-                    }
-                    byte val = Convert.ToByte(strVal, 16);
-
-                    m_frameDecoder.FrameDecodeInput(val);
-                }
-            });
-#else
             /* 通过传感器获取数据 */
             m_flowSensor.m_frameDecoder.WaveDataRespRecved += new FrameDecoder.WaveDataRecvHandler((byte channel, double value) => {
                 Console.WriteLine($"WaveDataRespRecved: {channel} {value}");
 
-                m_plotModel.Axes[0].Maximum = m_X + 1;
-
-                var lineSer1 = plotView1.Model.Series[0] as LineSeries;
-                lineSer1.Points.Add(new DataPoint(m_X, value / 1200));
-                if (lineSer1.Points.Count > 2000)
-                {
-                    lineSer1.Points.RemoveAt(0);
-                }
-
-                var lineSer2 = plotView1.Model.Series[1] as LineSeries;
-                lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)value) / 1200));
-                if (lineSer2.Points.Count > 2000)
-                {
-                    lineSer2.Points.RemoveAt(0);
-                }
-
-                var lineSer3 = plotView1.Model.Series[2] as LineSeries;
-                lineSer3.Points.Add(new DataPoint(m_X, m_kalmanFilter2.Input((float)value) / 1200));
-                if (lineSer3.Points.Count > 2000)
-                {
-                    lineSer3.Points.RemoveAt(0);
-                }
-
-                m_X++;
+                AddPoint(value);
 
                 m_plotModel.InvalidatePlot(true);
             });
-#endif
+        }
+
+        private void ClearAll()
+        {
+            var lineSer1 = plotView1.Model.Series[0] as LineSeries;
+            lineSer1.Points.Clear();
+
+            var lineSer2 = plotView1.Model.Series[1] as LineSeries;
+            lineSer2.Points.Clear();
+
+            var lineSer3 = plotView1.Model.Series[2] as LineSeries;
+            lineSer3.Points.Clear();
+
+            m_X = 0;
+
+            m_plotModel.InvalidatePlot(true);
+        }
+
+        private void AddPoint(double val)
+        {
+            m_plotModel.Axes[0].Maximum = m_X + 1;
+
+            var lineSer1 = plotView1.Model.Series[0] as LineSeries;
+            lineSer1.Points.Add(new DataPoint(m_X, val));
+
+            var lineSer2 = plotView1.Model.Series[1] as LineSeries;
+            lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)val)));
+
+            var lineSer3 = plotView1.Model.Series[2] as LineSeries;
+            lineSer3.Points.Add(new DataPoint(m_X, m_kalmanFilter2.Input((float)val)));
+
+            m_X++;
         }
 
         private async void SendCmd(string cmd)
         {
+            if (!m_flowSensor.IsOpen())
+            {
+                return;
+            }
+
             this.textBoxInfo.AppendText($"Sned: {cmd} \r\n");
             string cmdResp = await m_flowSensor.ExcuteCmdAsync(cmd, 2000);
             this.textBoxInfo.AppendText($"Revc: {cmdResp} \r\n");
@@ -227,7 +202,22 @@ namespace OxyPlotExample2
 
         private void toolStripButtonOpen_Click(object sender, EventArgs e)
         {
-            m_flowSensor.Open(toolStripComboBoxCom.Text);
+            if ("连接" == toolStripButtonOpen.Text)
+            {
+                bool bRet = m_flowSensor.Open(toolStripComboBoxCom.Text);
+                this.toolStripButtonStart.Enabled = bRet;
+                this.toolStripButtonStop.Enabled = bRet;
+                this.toolStripButtonZero.Enabled = bRet;
+                toolStripButtonOpen.Text = bRet ? "断开" : "连接";
+            }
+            else
+            {
+                m_flowSensor.Close();
+                this.toolStripButtonStart.Enabled = false;
+                this.toolStripButtonStop.Enabled = false;
+                this.toolStripButtonZero.Enabled = false;
+                toolStripButtonOpen.Text = "连接";
+            }
         }
 
         private void toolStripButtonStart_Click(object sender, EventArgs e)
@@ -247,12 +237,83 @@ namespace OxyPlotExample2
 
         private void toolStripButtonSave_Click(object sender, EventArgs e)
         {
+            SaveFileDialog saveCSVDialog = new SaveFileDialog();
+            saveCSVDialog.Filter = "CSV File (*.csv;)|*.csv";
+            //saveCSVDialog.Multiselect = false;
 
+            if (saveCSVDialog.ShowDialog() == DialogResult.OK)
+            {
+                if (String.IsNullOrEmpty(saveCSVDialog.FileName))
+                {
+                    return;
+                }
+
+                Task.Factory.StartNew(() =>
+                {
+                    var lineSer1 = plotView1.Model.Series[0] as LineSeries;
+                    StringBuilder strData = new StringBuilder();
+                    foreach (var point in lineSer1.Points)
+                    {
+                        strData.Append(point.Y);
+                        strData.Append(",");
+                    }
+
+                    using (StreamWriter writer = new StreamWriter(saveCSVDialog.FileName, false, Encoding.UTF8))
+                    {
+                        writer.Write(strData);
+                        writer.Close();
+
+                        MessageBox.Show("保存成功.");
+                    }
+                });
+            }
         }
 
         private void toolStripButtonLoad_Click(object sender, EventArgs e)
         {
+            OpenFileDialog openCSVDialog = new OpenFileDialog();
+            openCSVDialog.Filter = "CSV File (*.csv;)|*.csv";
+            openCSVDialog.Multiselect = false;
 
+            if (openCSVDialog.ShowDialog() == DialogResult.OK)
+            {
+                if (String.IsNullOrEmpty(openCSVDialog.FileName))
+                {
+                    return;
+                }
+
+                Task.Factory.StartNew(() =>
+                {
+                    string strData = String.Empty;
+
+                    using (StreamReader reader = new StreamReader(openCSVDialog.FileName, Encoding.UTF8))
+                    {
+                        strData = reader.ReadToEnd();
+                        reader.Close();
+                    }
+
+                    ClearAll();
+
+                    string[] strDataArray = strData.Split(new char[] { ',' });
+                    foreach (var strVal in strDataArray)
+                    {
+                        if (String.Empty == strVal)
+                        {
+                            continue;
+                        }
+                        double val = Convert.ToDouble(strVal);
+
+                        AddPoint(val);
+                    }
+
+                    m_plotModel.InvalidatePlot(true);
+                });
+            }
+        }
+
+        private void toolStripButtonClear_Click(object sender, EventArgs e)
+        {
+            ClearAll();
         }
     }
 }

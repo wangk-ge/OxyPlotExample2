@@ -17,21 +17,7 @@ namespace OxyPlotExample2
 
         public FlowSensor()
         {
-            FrameDecoder.Test();
-        }
-
-        public void Open(string portName)
-        {
-            m_serialPort?.Close();
-            m_serialPort = new SerialPort(portName);
-            m_serialPort.BaudRate = 115200;
-            m_serialPort.Parity = Parity.None;
-            m_serialPort.StopBits = StopBits.One;
-            m_serialPort.DataBits = 8;
-            m_serialPort.Handshake = Handshake.None;
-            m_serialPort.RtsEnable = true;
-
-            m_serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
+            //FrameDecoder.Test();
 
             m_frameDecoder.CmdRespRecved += new FrameDecoder.CmdRespRecvHandler((string cmdResp) => {
                 Console.WriteLine($"CmdRespRecved: {cmdResp}");
@@ -46,13 +32,98 @@ namespace OxyPlotExample2
                     taskComp?.SetResult(cmdResp);
                 }
             });
+        }
 
-            m_serialPort.Open();
+        public bool Open(string portName)
+        {
+            try
+            {
+                m_serialPort?.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+
+                return false;
+            }
+
+            m_serialPort?.Dispose();
+
+            try
+            {
+                m_serialPort = new SerialPort(portName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+
+                return false;
+            }
+
+            m_serialPort.BaudRate = 115200;
+            m_serialPort.Parity = Parity.None;
+            m_serialPort.StopBits = StopBits.One;
+            m_serialPort.DataBits = 8;
+            m_serialPort.Handshake = Handshake.None;
+            m_serialPort.RtsEnable = true;
+
+            m_serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
+
+            try
+            {
+                m_serialPort.Open();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+
+                m_serialPort.Dispose();
+                m_serialPort = null;
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private void DataReceivedHandler(
+                        object sender,
+                        SerialDataReceivedEventArgs e)
+        {
+            SerialPort sp = sender as SerialPort;
+            int dataLen = sp.BytesToRead;
+            byte[] dataBuf = new byte[dataLen];
+            sp.Read(dataBuf, 0, dataLen);
+            m_frameDecoder.FrameDecode(dataBuf);
+        }
+
+        public bool IsOpen()
+        {
+            if (null == m_serialPort)
+            {
+                return false;
+            }
+
+            return m_serialPort.IsOpen;
         }
 
         public void Close()
         {
-            m_serialPort.Close();
+            if (null == m_serialPort)
+            {
+                return;
+            }
+
+            try 
+            {
+                m_serialPort.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            
+            m_serialPort.Dispose();
             m_serialPort = null;
         }
 
@@ -77,6 +148,11 @@ namespace OxyPlotExample2
         /* 执行命令(异步版本) */
         public async Task<string> ExcuteCmdAsync(string cmd, int timeOut)
         {
+            if (null == m_serialPort)
+            {
+                return string.Empty;
+            }
+
             /* 创建CMD Task */
             var cmdTask = ExcuteCmdTask(cmd);
 
@@ -100,6 +176,11 @@ namespace OxyPlotExample2
         /* 执行命令(同步版本) */
         public string ExcuteCmd(string cmd, int timeOut)
         {
+            if (null == m_serialPort)
+            {
+                return string.Empty;
+            }
+
             /* 创建CMD Task */
             var cmdTask = ExcuteCmdTask(cmd);
 
@@ -119,17 +200,6 @@ namespace OxyPlotExample2
             }
 
             return string.Empty;
-        }
-
-        private void DataReceivedHandler(
-                        object sender,
-                        SerialDataReceivedEventArgs e)
-        {
-            SerialPort sp = sender as SerialPort;
-            int dataLen = sp.BytesToRead;
-            byte[] dataBuf = new byte[dataLen];
-            sp.Read(dataBuf, 0, dataLen);
-            m_frameDecoder.FrameDecode(dataBuf);
         }
     }
 }
