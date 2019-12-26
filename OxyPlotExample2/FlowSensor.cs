@@ -66,6 +66,7 @@ namespace OxyPlotExample2
             m_serialPort.DataBits = 8;
             m_serialPort.Handshake = Handshake.None;
             m_serialPort.RtsEnable = true;
+            m_serialPort.DtrEnable = true;
 
             m_serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
 
@@ -125,6 +126,8 @@ namespace OxyPlotExample2
             
             m_serialPort.Dispose();
             m_serialPort = null;
+
+            m_cmdRespTaskCompQue.Clear();
         }
 
         /* 创建CMD Task */

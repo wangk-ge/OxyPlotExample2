@@ -191,6 +191,8 @@ namespace OxyPlotExample2
 
         private void ApplyFilter()
         {
+            m_kalmanFilter.R = (float)decimal.ToDouble(numericUpDownR.Value);
+
             var lineSer1 = plotView1.Model.Series[0] as LineSeries;
 
             var lineSer2 = plotView1.Model.Series[1] as LineSeries;
@@ -228,9 +230,9 @@ namespace OxyPlotExample2
                 bool bRet = m_flowSensor.Open(toolStripComboBoxCom.Text);
                 toolStripButtonStart.Enabled = bRet;
                 //toolStripButtonZero.Enabled = bRet;
-                toolStripButtonLoad.Enabled = !bRet;
-                toolStripButtonSave.Enabled = !bRet;
-                toolStripButtonClear.Enabled = !bRet;
+                //toolStripButtonLoad.Enabled = !bRet;
+                //toolStripButtonSave.Enabled = !bRet;
+                //toolStripButtonClear.Enabled = !bRet;
                 toolStripButtonRefresh.Enabled = !bRet;
                 toolStripComboBoxCom.Enabled = !bRet;
                 toolStripButtonOpen.Text = bRet ? "断开" : "连接";
@@ -246,6 +248,7 @@ namespace OxyPlotExample2
                 toolStripButtonRefresh.Enabled = true;
                 toolStripComboBoxCom.Enabled = true;
                 buttonFilterApply.Enabled = true;
+                numericUpDownR.Enabled = true;
                 toolStripButtonOpen.Text = "连接";
                 toolStripButtonStart.Text = "开始";
                 /* 停止刷新定时器 */
@@ -271,6 +274,10 @@ namespace OxyPlotExample2
                     toolStripButtonStart.Text = "停止";
                     toolStripButtonZero.Enabled = true;
                     buttonFilterApply.Enabled = false;
+                    numericUpDownR.Enabled = false;
+                    toolStripButtonClear.Enabled = false;
+                    toolStripButtonLoad.Enabled = false;
+                    toolStripButtonSave.Enabled = false;
                     ClearAll();
                     /* 启动刷新定时器 */
                     m_refreshTimer.Start();
@@ -280,6 +287,10 @@ namespace OxyPlotExample2
                     toolStripButtonStart.Text = "开始";
                     toolStripButtonZero.Enabled = false;
                     buttonFilterApply.Enabled = true;
+                    numericUpDownR.Enabled = true;
+                    toolStripButtonClear.Enabled = true;
+                    toolStripButtonLoad.Enabled = true;
+                    toolStripButtonSave.Enabled = true;
                     /* 停止刷新定时器 */
                     m_refreshTimer.Stop();
                 }
@@ -382,7 +393,7 @@ namespace OxyPlotExample2
 
         private void numericUpDownR_ValueChanged(object sender, EventArgs e)
         {
-            m_kalmanFilter.R = (float)decimal.ToDouble(numericUpDownR.Value);
+            //m_kalmanFilter.R = (float)decimal.ToDouble(numericUpDownR.Value);
         }
 
         private void buttonFilterApply_Click(object sender, EventArgs e)
