@@ -194,7 +194,7 @@ namespace OxyPlotExample2
             m_plotModel.InvalidatePlot(true);
 
             var xAxis = m_plotModel.Axes[0];
-            if (m_X > xAxis.Maximum)
+            if (checkBoxAutoScroll.Checked && (m_X > xAxis.Maximum))
             {
                 double panStep = xAxis.Transform(-1 + xAxis.Offset);
                 xAxis.Pan(panStep);

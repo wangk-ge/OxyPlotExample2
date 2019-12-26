@@ -51,6 +51,7 @@
             this.toolStripButtonLoad = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonClear = new System.Windows.Forms.ToolStripButton();
             this.plotView1 = new OxyPlot.WindowsForms.PlotView();
+            this.checkBoxAutoScroll = new System.Windows.Forms.CheckBox();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -119,6 +120,7 @@
             // 
             // panel3
             // 
+            this.panel3.Controls.Add(this.checkBoxAutoScroll);
             this.panel3.Controls.Add(this.buttonFilterApply);
             this.panel3.Controls.Add(this.label2);
             this.panel3.Controls.Add(this.numericUpDownR);
@@ -291,6 +293,18 @@
             this.plotView1.ZoomRectangleCursor = System.Windows.Forms.Cursors.SizeNWSE;
             this.plotView1.ZoomVerticalCursor = System.Windows.Forms.Cursors.SizeNS;
             // 
+            // checkBoxAutoScroll
+            // 
+            this.checkBoxAutoScroll.AutoSize = true;
+            this.checkBoxAutoScroll.Checked = true;
+            this.checkBoxAutoScroll.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxAutoScroll.Location = new System.Drawing.Point(354, 9);
+            this.checkBoxAutoScroll.Name = "checkBoxAutoScroll";
+            this.checkBoxAutoScroll.Size = new System.Drawing.Size(72, 16);
+            this.checkBoxAutoScroll.TabIndex = 3;
+            this.checkBoxAutoScroll.Text = "自动滚屏";
+            this.checkBoxAutoScroll.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AcceptButton = this.buttonSend;
@@ -341,6 +355,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.NumericUpDown numericUpDownR;
         private System.Windows.Forms.Button buttonFilterApply;
+        private System.Windows.Forms.CheckBox checkBoxAutoScroll;
     }
 }
 
