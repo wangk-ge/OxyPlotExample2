@@ -18,8 +18,9 @@ namespace OxyPlotExample2
         private KalmanFilter m_kalmanFilter = new KalmanFilter(0.01f/*Q*/, 0.01f/*R*/, 1.0f/*P*/, 0);
         private LinearAxis m_xAxis; // X轴
         private LinearAxis m_yAxis; // Y轴
-        private int m_X = 0;
+        private long m_X = 0;
         private Timer m_refreshTimer = new Timer();
+        private readonly int m_fps = 24; // 帧率
 
         private PlotModel m_plotModel;
 
@@ -83,7 +84,6 @@ namespace OxyPlotExample2
             {
                 MajorGridlineStyle = LineStyle.Solid,
                 MinorGridlineStyle = LineStyle.Dot,
-                //IntervalLength = 60,
                 IsZoomEnabled = true,
                 IsPanEnabled = true,
                 Position = AxisPosition.Bottom,
@@ -97,13 +97,9 @@ namespace OxyPlotExample2
             {
                 MajorGridlineStyle = LineStyle.Solid,
                 MinorGridlineStyle = LineStyle.Dot,
-                //IntervalLength = 60,
-                //Angle = 0,
                 IsZoomEnabled = true,
                 IsPanEnabled = true,
-                Position = AxisPosition.Left,
-                //Minimum = -1000,
-                //Maximum = 1000
+                Position = AxisPosition.Left
             };
             m_plotModel.Axes.Add(m_yAxis);
 
@@ -138,9 +134,10 @@ namespace OxyPlotExample2
                 m_dataQueue.Enqueue(value);
             });
 
-            m_refreshTimer.Interval = 1000 / 24;
+            m_refreshTimer.Interval = 1000 / m_fps;
             m_refreshTimer.Tick += new EventHandler((timer, arg) => {
 
+                long xBegin = m_X;
                 while (m_dataQueue.Count > 0)
                 {
                     bool bRet = m_dataQueue.TryDequeue(out double val);
@@ -149,6 +146,19 @@ namespace OxyPlotExample2
                         break;
                     }
                     AddPoint(val);
+                }
+
+                long xDelta = m_X - xBegin;
+                if (xDelta > 0)
+                {
+                    m_plotModel.InvalidatePlot(true);
+
+                    var xAxis = m_plotModel.Axes[0];
+                    if (checkBoxAutoScroll.Checked && (m_X > xAxis.Maximum))
+                    {
+                        double panStep = xAxis.Transform(-xDelta + xAxis.Offset);
+                        xAxis.Pan(panStep);
+                    }
                 }
             });
 
@@ -190,15 +200,6 @@ namespace OxyPlotExample2
             lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)val)));
 
             m_X++;
-
-            m_plotModel.InvalidatePlot(true);
-
-            var xAxis = m_plotModel.Axes[0];
-            if (checkBoxAutoScroll.Checked && (m_X > xAxis.Maximum))
-            {
-                double panStep = xAxis.Transform(-1 + xAxis.Offset);
-                xAxis.Pan(panStep);
-            }
         }
 
         private void ApplyFilter()
@@ -290,7 +291,7 @@ namespace OxyPlotExample2
                     toolStripButtonClear.Enabled = false;
                     toolStripButtonLoad.Enabled = false;
                     toolStripButtonSave.Enabled = false;
-                    ClearAll();
+                    //ClearAll();
                     /* 启动刷新定时器 */
                     m_refreshTimer.Start();
                 }
@@ -392,6 +393,8 @@ namespace OxyPlotExample2
                     }
 
                     this.BeginInvoke(new Action<Form1>((obj) => { toolStripButtonLoad.Enabled = true; }), this);
+
+                    m_plotModel.InvalidatePlot(true);
                 });
             }
         }

@@ -162,7 +162,7 @@
             1,
             0,
             0,
-            131072});
+            65536});
             this.numericUpDownR.Location = new System.Drawing.Point(84, 5);
             this.numericUpDownR.Minimum = new decimal(new int[] {
             1,
