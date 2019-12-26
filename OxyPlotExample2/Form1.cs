@@ -83,10 +83,12 @@ namespace OxyPlotExample2
             {
                 MajorGridlineStyle = LineStyle.Solid,
                 MinorGridlineStyle = LineStyle.Dot,
-                IntervalLength = 60,
+                //IntervalLength = 60,
                 IsZoomEnabled = true,
                 IsPanEnabled = true,
-                Position = AxisPosition.Bottom
+                Position = AxisPosition.Bottom,
+                Minimum = 0,
+                Maximum = 1000
             };
             m_plotModel.Axes.Add(m_xAxis);
 
@@ -95,8 +97,8 @@ namespace OxyPlotExample2
             {
                 MajorGridlineStyle = LineStyle.Solid,
                 MinorGridlineStyle = LineStyle.Dot,
-                IntervalLength = 60,
-                Angle = 0,
+                //IntervalLength = 60,
+                //Angle = 0,
                 IsZoomEnabled = true,
                 IsPanEnabled = true,
                 Position = AxisPosition.Left,
@@ -148,9 +150,9 @@ namespace OxyPlotExample2
                     }
                     AddPoint(val);
                 }
-
-                m_plotModel.InvalidatePlot(true);
             });
+
+            m_kalmanFilter.R = (float)decimal.ToDouble(numericUpDownR.Value);
         }
 
         private void ClearAll()
@@ -173,13 +175,14 @@ namespace OxyPlotExample2
                 }
             }
 
+            var xAxis = m_plotModel.Axes[0];
+            xAxis.Reset();
+
             m_plotModel.InvalidatePlot(true);
         }
 
         private void AddPoint(double val)
         {
-            m_plotModel.Axes[0].Maximum = m_X + 1;
-
             var lineSer1 = plotView1.Model.Series[0] as LineSeries;
             lineSer1.Points.Add(new DataPoint(m_X, val));
 
@@ -187,6 +190,15 @@ namespace OxyPlotExample2
             lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)val)));
 
             m_X++;
+
+            m_plotModel.InvalidatePlot(true);
+
+            var xAxis = m_plotModel.Axes[0];
+            if (m_X > xAxis.Maximum)
+            {
+                double panStep = xAxis.Transform(-1 + xAxis.Offset);
+                xAxis.Pan(panStep);
+            }
         }
 
         private void ApplyFilter()
@@ -380,8 +392,6 @@ namespace OxyPlotExample2
                     }
 
                     this.BeginInvoke(new Action<Form1>((obj) => { toolStripButtonLoad.Enabled = true; }), this);
-
-                    m_plotModel.InvalidatePlot(true);
                 });
             }
         }
@@ -393,7 +403,7 @@ namespace OxyPlotExample2
 
         private void numericUpDownR_ValueChanged(object sender, EventArgs e)
         {
-            //m_kalmanFilter.R = (float)decimal.ToDouble(numericUpDownR.Value);
+            m_kalmanFilter.R = (float)decimal.ToDouble(numericUpDownR.Value);
         }
 
         private void buttonFilterApply_Click(object sender, EventArgs e)

@@ -36,6 +36,7 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.textBoxInfo = new System.Windows.Forms.TextBox();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.buttonFilterApply = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.numericUpDownR = new System.Windows.Forms.NumericUpDown();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
@@ -50,7 +51,6 @@
             this.toolStripButtonLoad = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonClear = new System.Windows.Forms.ToolStripButton();
             this.plotView1 = new OxyPlot.WindowsForms.PlotView();
-            this.buttonFilterApply = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -128,6 +128,16 @@
             this.panel3.Size = new System.Drawing.Size(917, 31);
             this.panel3.TabIndex = 2;
             // 
+            // buttonFilterApply
+            // 
+            this.buttonFilterApply.Location = new System.Drawing.Point(219, 4);
+            this.buttonFilterApply.Name = "buttonFilterApply";
+            this.buttonFilterApply.Size = new System.Drawing.Size(75, 23);
+            this.buttonFilterApply.TabIndex = 2;
+            this.buttonFilterApply.Text = "应用";
+            this.buttonFilterApply.UseVisualStyleBackColor = true;
+            this.buttonFilterApply.Click += new System.EventHandler(this.buttonFilterApply_Click);
+            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -155,10 +165,10 @@
             this.numericUpDownR.Size = new System.Drawing.Size(129, 21);
             this.numericUpDownR.TabIndex = 0;
             this.numericUpDownR.Value = new decimal(new int[] {
-            1,
+            100,
             0,
             0,
-            131072});
+            65536});
             this.numericUpDownR.ValueChanged += new System.EventHandler(this.numericUpDownR_ValueChanged);
             // 
             // toolStrip1
@@ -280,16 +290,6 @@
             this.plotView1.ZoomHorizontalCursor = System.Windows.Forms.Cursors.SizeWE;
             this.plotView1.ZoomRectangleCursor = System.Windows.Forms.Cursors.SizeNWSE;
             this.plotView1.ZoomVerticalCursor = System.Windows.Forms.Cursors.SizeNS;
-            // 
-            // buttonFilterApply
-            // 
-            this.buttonFilterApply.Location = new System.Drawing.Point(219, 4);
-            this.buttonFilterApply.Name = "buttonFilterApply";
-            this.buttonFilterApply.Size = new System.Drawing.Size(75, 23);
-            this.buttonFilterApply.TabIndex = 2;
-            this.buttonFilterApply.Text = "应用";
-            this.buttonFilterApply.UseVisualStyleBackColor = true;
-            this.buttonFilterApply.Click += new System.EventHandler(this.buttonFilterApply_Click);
             // 
             // Form1
             // 
