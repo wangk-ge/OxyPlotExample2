@@ -247,6 +247,9 @@ namespace OxyPlotExample2
                 toolStripComboBoxCom.Enabled = true;
                 buttonFilterApply.Enabled = true;
                 toolStripButtonOpen.Text = "连接";
+                toolStripButtonStart.Text = "开始";
+                /* 停止刷新定时器 */
+                m_refreshTimer.Stop();
             }
         }
 
@@ -385,6 +388,11 @@ namespace OxyPlotExample2
         private void buttonFilterApply_Click(object sender, EventArgs e)
         {
             ApplyFilter();
+        }
+
+        private void toolStripButtonRefresh_Click(object sender, EventArgs e)
+        {
+            EnumSerialPorts();
         }
     }
 }
