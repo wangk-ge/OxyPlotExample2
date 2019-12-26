@@ -52,6 +52,7 @@
             this.toolStripButtonClear = new System.Windows.Forms.ToolStripButton();
             this.plotView1 = new OxyPlot.WindowsForms.PlotView();
             this.checkBoxAutoScroll = new System.Windows.Forms.CheckBox();
+            this.buttonClean = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -61,6 +62,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.buttonClean);
             this.panel1.Controls.Add(this.buttonSend);
             this.panel1.Controls.Add(this.textBoxCmd);
             this.panel1.Controls.Add(this.label1);
@@ -72,7 +74,8 @@
             // 
             // buttonSend
             // 
-            this.buttonSend.Location = new System.Drawing.Point(843, 16);
+            this.buttonSend.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonSend.Location = new System.Drawing.Point(760, 15);
             this.buttonSend.Name = "buttonSend";
             this.buttonSend.Size = new System.Drawing.Size(66, 29);
             this.buttonSend.TabIndex = 5;
@@ -82,10 +85,13 @@
             // 
             // textBoxCmd
             // 
+            this.textBoxCmd.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxCmd.Location = new System.Drawing.Point(59, 20);
             this.textBoxCmd.Name = "textBoxCmd";
-            this.textBoxCmd.Size = new System.Drawing.Size(772, 21);
+            this.textBoxCmd.Size = new System.Drawing.Size(695, 21);
             this.textBoxCmd.TabIndex = 3;
+            this.textBoxCmd.KeyUp += new System.Windows.Forms.KeyEventHandler(this.textBoxCmd_KeyUp);
             // 
             // label1
             // 
@@ -295,19 +301,30 @@
             // 
             // checkBoxAutoScroll
             // 
+            this.checkBoxAutoScroll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxAutoScroll.AutoSize = true;
             this.checkBoxAutoScroll.Checked = true;
             this.checkBoxAutoScroll.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxAutoScroll.Location = new System.Drawing.Point(354, 9);
+            this.checkBoxAutoScroll.Location = new System.Drawing.Point(837, 8);
             this.checkBoxAutoScroll.Name = "checkBoxAutoScroll";
             this.checkBoxAutoScroll.Size = new System.Drawing.Size(72, 16);
             this.checkBoxAutoScroll.TabIndex = 3;
             this.checkBoxAutoScroll.Text = "自动滚屏";
             this.checkBoxAutoScroll.UseVisualStyleBackColor = true;
             // 
+            // buttonClean
+            // 
+            this.buttonClean.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonClean.Location = new System.Drawing.Point(837, 15);
+            this.buttonClean.Name = "buttonClean";
+            this.buttonClean.Size = new System.Drawing.Size(68, 29);
+            this.buttonClean.TabIndex = 6;
+            this.buttonClean.Text = "清空";
+            this.buttonClean.UseVisualStyleBackColor = true;
+            this.buttonClean.Click += new System.EventHandler(this.buttonClean_Click);
+            // 
             // Form1
             // 
-            this.AcceptButton = this.buttonSend;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(917, 503);
@@ -356,6 +373,7 @@
         private System.Windows.Forms.NumericUpDown numericUpDownR;
         private System.Windows.Forms.Button buttonFilterApply;
         private System.Windows.Forms.CheckBox checkBoxAutoScroll;
+        private System.Windows.Forms.Button buttonClean;
     }
 }
 

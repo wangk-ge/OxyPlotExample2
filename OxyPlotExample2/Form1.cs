@@ -69,8 +69,8 @@ namespace OxyPlotExample2
             // 定义Model
             m_plotModel = new PlotModel()
             {
-                Title = "Presure",
-                LegendTitle = "Legend",
+                Title = "波形",
+                LegendTitle = "图例",
                 LegendOrientation = LegendOrientation.Horizontal,
                 LegendPlacement = LegendPlacement.Inside,
                 LegendPosition = LegendPosition.TopRight,
@@ -114,7 +114,7 @@ namespace OxyPlotExample2
                 MarkerSize = 1,
                 MarkerStroke = OxyColors.DarkGreen,
                 MarkerType = MarkerType.Circle,
-                Title = "Presure"
+                Title = "Data"
             };
             m_plotModel.Series.Add(series);
 
@@ -260,7 +260,7 @@ namespace OxyPlotExample2
                 toolStripButtonRefresh.Enabled = true;
                 toolStripComboBoxCom.Enabled = true;
                 buttonFilterApply.Enabled = true;
-                numericUpDownR.Enabled = true;
+                //numericUpDownR.Enabled = true;
                 toolStripButtonOpen.Text = "连接";
                 toolStripButtonStart.Text = "开始";
                 /* 停止刷新定时器 */
@@ -286,7 +286,7 @@ namespace OxyPlotExample2
                     toolStripButtonStart.Text = "停止";
                     toolStripButtonZero.Enabled = true;
                     buttonFilterApply.Enabled = false;
-                    numericUpDownR.Enabled = false;
+                    //numericUpDownR.Enabled = false;
                     toolStripButtonClear.Enabled = false;
                     toolStripButtonLoad.Enabled = false;
                     toolStripButtonSave.Enabled = false;
@@ -299,7 +299,7 @@ namespace OxyPlotExample2
                     toolStripButtonStart.Text = "开始";
                     toolStripButtonZero.Enabled = false;
                     buttonFilterApply.Enabled = true;
-                    numericUpDownR.Enabled = true;
+                    //numericUpDownR.Enabled = true;
                     toolStripButtonClear.Enabled = true;
                     toolStripButtonLoad.Enabled = true;
                     toolStripButtonSave.Enabled = true;
@@ -414,6 +414,19 @@ namespace OxyPlotExample2
         private void toolStripButtonRefresh_Click(object sender, EventArgs e)
         {
             EnumSerialPorts();
+        }
+
+        private void buttonClean_Click(object sender, EventArgs e)
+        {
+            this.textBoxInfo.Clear();
+        }
+
+        private void textBoxCmd_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                SendCmd(this.textBoxCmd.Text);
+            }
         }
     }
 }
