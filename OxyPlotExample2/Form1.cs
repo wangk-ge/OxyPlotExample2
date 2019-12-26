@@ -1,12 +1,11 @@
 ﻿using OxyPlot;
-using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.IO.Ports;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,11 +13,13 @@ namespace OxyPlotExample2
 {
     public partial class Form1 : Form
     {
+        private ConcurrentQueue<double> m_dataQueue = new ConcurrentQueue<double>();
         private FlowSensor m_flowSensor = new FlowSensor();
         private KalmanFilter m_kalmanFilter = new KalmanFilter(0.01f/*Q*/, 0.01f/*R*/, 1.0f/*P*/, 0);
         private LinearAxis m_xAxis; // X轴
         private LinearAxis m_yAxis; // Y轴
         private int m_X = 0;
+        private Timer m_refreshTimer = new Timer();
 
         private PlotModel m_plotModel;
 
@@ -130,9 +131,23 @@ namespace OxyPlotExample2
 
             /* 通过传感器获取数据 */
             m_flowSensor.m_frameDecoder.WaveDataRespRecved += new FrameDecoder.WaveDataRecvHandler((byte channel, double value) => {
-                Console.WriteLine($"WaveDataRespRecved: {channel} {value}");
+                //Console.WriteLine($"WaveDataRespRecved: {channel} {value}");
 
-                AddPoint(value);
+                m_dataQueue.Enqueue(value);
+            });
+
+            m_refreshTimer.Interval = 1000 / 24;
+            m_refreshTimer.Tick += new EventHandler((timer, arg) => {
+
+                while (m_dataQueue.Count > 0)
+                {
+                    bool bRet = m_dataQueue.TryDequeue(out double val);
+                    if (!bRet)
+                    {
+                        break;
+                    }
+                    AddPoint(val);
+                }
 
                 m_plotModel.InvalidatePlot(true);
             });
@@ -146,10 +161,17 @@ namespace OxyPlotExample2
             var lineSer2 = plotView1.Model.Series[1] as LineSeries;
             lineSer2.Points.Clear();
 
-            var lineSer3 = plotView1.Model.Series[2] as LineSeries;
-            lineSer3.Points.Clear();
-
             m_X = 0;
+
+            /* 尝试清空队列 */
+            while (m_dataQueue.Count > 0)
+            {
+                bool bRet = m_dataQueue.TryDequeue(out _);
+                if (!bRet)
+                {
+                    break;
+                }
+            }
 
             m_plotModel.InvalidatePlot(true);
         }
@@ -165,6 +187,21 @@ namespace OxyPlotExample2
             lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)val)));
 
             m_X++;
+        }
+
+        private void ApplyFilter()
+        {
+            var lineSer1 = plotView1.Model.Series[0] as LineSeries;
+
+            var lineSer2 = plotView1.Model.Series[1] as LineSeries;
+            lineSer2.Points.Clear();
+
+            for (int i = 0; i < lineSer1.Points.Count; ++i)
+            {
+                lineSer2.Points.Add(new DataPoint(i, m_kalmanFilter.Input((float)lineSer1.Points[i].Y)));
+            }
+
+            m_plotModel.InvalidatePlot(true);
         }
 
         private async void SendCmd(string cmd)
@@ -190,8 +227,7 @@ namespace OxyPlotExample2
             {
                 bool bRet = m_flowSensor.Open(toolStripComboBoxCom.Text);
                 toolStripButtonStart.Enabled = bRet;
-                toolStripButtonStop.Enabled = bRet;
-                toolStripButtonZero.Enabled = bRet;
+                //toolStripButtonZero.Enabled = bRet;
                 toolStripButtonLoad.Enabled = !bRet;
                 toolStripButtonSave.Enabled = !bRet;
                 toolStripButtonClear.Enabled = !bRet;
@@ -203,25 +239,48 @@ namespace OxyPlotExample2
             {
                 m_flowSensor.Close();
                 toolStripButtonStart.Enabled = false;
-                toolStripButtonStop.Enabled = false;
                 toolStripButtonZero.Enabled = false;
                 toolStripButtonLoad.Enabled = true;
                 toolStripButtonSave.Enabled = true;
                 toolStripButtonClear.Enabled = true;
                 toolStripButtonRefresh.Enabled = true;
                 toolStripComboBoxCom.Enabled = true;
+                buttonFilterApply.Enabled = true;
                 toolStripButtonOpen.Text = "连接";
             }
         }
 
-        private void toolStripButtonStart_Click(object sender, EventArgs e)
+        private async void toolStripButtonStart_Click(object sender, EventArgs e)
         {
-            SendCmd("[ADC_START]");
-        }
+            string cmd = "[ADC_START]";
+            if ("停止" == toolStripButtonStart.Text)
+            {
+                cmd = "[ADC_STOP]";
+            }
+            this.textBoxInfo.AppendText($"Sned: {cmd} \r\n");
+            string cmdResp = await m_flowSensor.ExcuteCmdAsync(cmd, 2000);
+            this.textBoxInfo.AppendText($"Revc: {cmdResp} \r\n");
 
-        private void toolStripButtonStop_Click(object sender, EventArgs e)
-        {
-            SendCmd("[ADC_STOP]");
+            if ("[OK]" == cmdResp)
+            {
+                if ("开始" == toolStripButtonStart.Text)
+                {
+                    toolStripButtonStart.Text = "停止";
+                    toolStripButtonZero.Enabled = true;
+                    buttonFilterApply.Enabled = false;
+                    ClearAll();
+                    /* 启动刷新定时器 */
+                    m_refreshTimer.Start();
+                }
+                else // if ("停止" == toolStripButtonStart.Text)
+                {
+                    toolStripButtonStart.Text = "开始";
+                    toolStripButtonZero.Enabled = false;
+                    buttonFilterApply.Enabled = true;
+                    /* 停止刷新定时器 */
+                    m_refreshTimer.Stop();
+                }
+            }
         }
 
         private void toolStripButtonZero_Click(object sender, EventArgs e)
@@ -242,6 +301,8 @@ namespace OxyPlotExample2
                     return;
                 }
 
+                toolStripButtonSave.Enabled = false;
+
                 Task.Factory.StartNew(() =>
                 {
                     var lineSer1 = plotView1.Model.Series[0] as LineSeries;
@@ -259,6 +320,8 @@ namespace OxyPlotExample2
 
                         MessageBox.Show("保存成功.");
                     }
+
+                    this.BeginInvoke(new Action<Form1>((obj) => { toolStripButtonSave.Enabled = true; }), this);
                 });
             }
         }
@@ -275,6 +338,8 @@ namespace OxyPlotExample2
                 {
                     return;
                 }
+
+                toolStripButtonLoad.Enabled = false;
 
                 Task.Factory.StartNew(() =>
                 {
@@ -300,6 +365,8 @@ namespace OxyPlotExample2
                         AddPoint(val);
                     }
 
+                    this.BeginInvoke(new Action<Form1>((obj) => { toolStripButtonLoad.Enabled = true; }), this);
+
                     m_plotModel.InvalidatePlot(true);
                 });
             }
@@ -313,6 +380,11 @@ namespace OxyPlotExample2
         private void numericUpDownR_ValueChanged(object sender, EventArgs e)
         {
             m_kalmanFilter.R = (float)decimal.ToDouble(numericUpDownR.Value);
+        }
+
+        private void buttonFilterApply_Click(object sender, EventArgs e)
+        {
+            ApplyFilter();
         }
     }
 }
