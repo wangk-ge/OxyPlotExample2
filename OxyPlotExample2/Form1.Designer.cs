@@ -37,6 +37,9 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.textBoxInfo = new System.Windows.Forms.TextBox();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.labelMaxRange = new System.Windows.Forms.Label();
+            this.labelMaxVal = new System.Windows.Forms.Label();
+            this.labelMinVal = new System.Windows.Forms.Label();
             this.checkBoxAutoScroll = new System.Windows.Forms.CheckBox();
             this.buttonFilterApply = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
@@ -53,9 +56,6 @@
             this.toolStripButtonLoad = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonClear = new System.Windows.Forms.ToolStripButton();
             this.plotView1 = new OxyPlot.WindowsForms.PlotView();
-            this.labelMinVal = new System.Windows.Forms.Label();
-            this.labelMaxVal = new System.Windows.Forms.Label();
-            this.labelMaxRange = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -152,6 +152,33 @@
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(917, 54);
             this.panel3.TabIndex = 2;
+            // 
+            // labelMaxRange
+            // 
+            this.labelMaxRange.AutoSize = true;
+            this.labelMaxRange.Location = new System.Drawing.Point(566, 22);
+            this.labelMaxRange.Name = "labelMaxRange";
+            this.labelMaxRange.Size = new System.Drawing.Size(71, 12);
+            this.labelMaxRange.TabIndex = 6;
+            this.labelMaxRange.Text = "最大幅度：0";
+            // 
+            // labelMaxVal
+            // 
+            this.labelMaxVal.AutoSize = true;
+            this.labelMaxVal.Location = new System.Drawing.Point(348, 34);
+            this.labelMaxVal.Name = "labelMaxVal";
+            this.labelMaxVal.Size = new System.Drawing.Size(59, 12);
+            this.labelMaxVal.TabIndex = 5;
+            this.labelMaxVal.Text = "最大值：0";
+            // 
+            // labelMinVal
+            // 
+            this.labelMinVal.AutoSize = true;
+            this.labelMinVal.Location = new System.Drawing.Point(348, 13);
+            this.labelMinVal.Name = "labelMinVal";
+            this.labelMinVal.Size = new System.Drawing.Size(59, 12);
+            this.labelMinVal.TabIndex = 4;
+            this.labelMinVal.Text = "最小值：0";
             // 
             // checkBoxAutoScroll
             // 
@@ -328,33 +355,6 @@
             this.plotView1.ZoomHorizontalCursor = System.Windows.Forms.Cursors.SizeWE;
             this.plotView1.ZoomRectangleCursor = System.Windows.Forms.Cursors.SizeNWSE;
             this.plotView1.ZoomVerticalCursor = System.Windows.Forms.Cursors.SizeNS;
-            // 
-            // labelMinVal
-            // 
-            this.labelMinVal.AutoSize = true;
-            this.labelMinVal.Location = new System.Drawing.Point(348, 13);
-            this.labelMinVal.Name = "labelMinVal";
-            this.labelMinVal.Size = new System.Drawing.Size(53, 12);
-            this.labelMinVal.TabIndex = 4;
-            this.labelMinVal.Text = "最小值：";
-            // 
-            // labelMaxVal
-            // 
-            this.labelMaxVal.AutoSize = true;
-            this.labelMaxVal.Location = new System.Drawing.Point(348, 34);
-            this.labelMaxVal.Name = "labelMaxVal";
-            this.labelMaxVal.Size = new System.Drawing.Size(53, 12);
-            this.labelMaxVal.TabIndex = 5;
-            this.labelMaxVal.Text = "最大值：";
-            // 
-            // labelMaxRange
-            // 
-            this.labelMaxRange.AutoSize = true;
-            this.labelMaxRange.Location = new System.Drawing.Point(566, 22);
-            this.labelMaxRange.Name = "labelMaxRange";
-            this.labelMaxRange.Size = new System.Drawing.Size(65, 12);
-            this.labelMaxRange.TabIndex = 6;
-            this.labelMaxRange.Text = "最大幅度：";
             // 
             // Form1
             // 

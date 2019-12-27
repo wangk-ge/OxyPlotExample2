@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO.Ports;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OxyPlotExample2
@@ -13,7 +11,7 @@ namespace OxyPlotExample2
         private SerialPort m_serialPort = null;
 
         public FrameDecoder m_frameDecoder = new FrameDecoder();
-        private Queue<TaskCompletionSource<string>> m_cmdRespTaskCompQue = new Queue<TaskCompletionSource<string>>();
+        private ConcurrentQueue<TaskCompletionSource<string>> m_cmdRespTaskCompQue = new ConcurrentQueue<TaskCompletionSource<string>>();
 
         public FlowSensor()
         {
@@ -24,11 +22,8 @@ namespace OxyPlotExample2
                 if (m_cmdRespTaskCompQue.Count > 0)
                 {
                     /* 通知CMD Task执行结果 */
-                    TaskCompletionSource<string> taskComp = null;
-                    lock (m_cmdRespTaskCompQue)
-                    {
-                        taskComp = m_cmdRespTaskCompQue.Dequeue();
-                    }
+                    TaskCompletionSource<string> taskComp;
+                    m_cmdRespTaskCompQue.TryDequeue(out taskComp);
                     taskComp?.SetResult(cmdResp);
                 }
             });
@@ -127,7 +122,16 @@ namespace OxyPlotExample2
             m_serialPort.Dispose();
             m_serialPort = null;
 
-            m_cmdRespTaskCompQue.Clear();
+            /* 清空队列 */
+            TaskCompletionSource<string> taskComp;
+            while (m_cmdRespTaskCompQue.Count > 0)
+            {
+                bool bRet = m_cmdRespTaskCompQue.TryDequeue(out taskComp);
+                if (!bRet)
+                {
+                    break;
+                }
+            }
         }
 
         /* 创建CMD Task */
@@ -135,10 +139,7 @@ namespace OxyPlotExample2
         {
             /* 将CMD Task记录到完成队列 */
             var cmdRespTaskComp = new TaskCompletionSource<string>();
-            lock (m_cmdRespTaskCompQue)
-            {
-                m_cmdRespTaskCompQue.Enqueue(cmdRespTaskComp);
-            }
+            m_cmdRespTaskCompQue.Enqueue(cmdRespTaskComp);
 
             /* 发送CMD */
             m_serialPort.Write(cmd);
@@ -167,11 +168,9 @@ namespace OxyPlotExample2
             }
 
             /* 超时 */
-            lock (m_cmdRespTaskCompQue)
-            {
-                /* 删除完成队列中的记录 */
-                m_cmdRespTaskCompQue.Dequeue();
-            }
+            /* 删除完成队列中的记录 */
+            TaskCompletionSource<string> taskComp;
+            m_cmdRespTaskCompQue.TryDequeue(out taskComp);
 
             return string.Empty;
         }
@@ -196,11 +195,9 @@ namespace OxyPlotExample2
             }
 
             /* 超时 */
-            lock (m_cmdRespTaskCompQue)
-            {
-                /* 删除完成队列中的记录 */
-                m_cmdRespTaskCompQue.Dequeue();
-            }
+            /* 删除完成队列中的记录 */
+            TaskCompletionSource<string> taskComp;
+            m_cmdRespTaskCompQue.TryDequeue(out taskComp);
 
             return string.Empty;
         }

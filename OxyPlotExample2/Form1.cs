@@ -195,6 +195,9 @@ namespace OxyPlotExample2
 
             m_minVal = double.MaxValue; // 最小值
             m_maxVal = double.MinValue; // 最大值
+            labelMinVal.Text = "最小值：0";
+            labelMaxVal.Text = "最大值：0";
+            labelMaxRange.Text = "最大幅度：0";
 
             m_plotModel.InvalidatePlot(true);
         }
