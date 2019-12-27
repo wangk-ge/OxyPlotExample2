@@ -30,12 +30,14 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.panel1 = new System.Windows.Forms.Panel();
+            this.buttonClean = new System.Windows.Forms.Button();
             this.buttonSend = new System.Windows.Forms.Button();
             this.textBoxCmd = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.textBoxInfo = new System.Windows.Forms.TextBox();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.checkBoxAutoScroll = new System.Windows.Forms.CheckBox();
             this.buttonFilterApply = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.numericUpDownR = new System.Windows.Forms.NumericUpDown();
@@ -51,8 +53,9 @@
             this.toolStripButtonLoad = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonClear = new System.Windows.Forms.ToolStripButton();
             this.plotView1 = new OxyPlot.WindowsForms.PlotView();
-            this.checkBoxAutoScroll = new System.Windows.Forms.CheckBox();
-            this.buttonClean = new System.Windows.Forms.Button();
+            this.labelMinVal = new System.Windows.Forms.Label();
+            this.labelMaxVal = new System.Windows.Forms.Label();
+            this.labelMaxRange = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -71,6 +74,17 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(917, 56);
             this.panel1.TabIndex = 0;
+            // 
+            // buttonClean
+            // 
+            this.buttonClean.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonClean.Location = new System.Drawing.Point(837, 15);
+            this.buttonClean.Name = "buttonClean";
+            this.buttonClean.Size = new System.Drawing.Size(68, 29);
+            this.buttonClean.TabIndex = 6;
+            this.buttonClean.Text = "清空";
+            this.buttonClean.UseVisualStyleBackColor = true;
+            this.buttonClean.Click += new System.EventHandler(this.buttonClean_Click);
             // 
             // buttonSend
             // 
@@ -116,16 +130,19 @@
             // textBoxInfo
             // 
             this.textBoxInfo.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBoxInfo.Location = new System.Drawing.Point(0, 31);
+            this.textBoxInfo.Location = new System.Drawing.Point(0, 54);
             this.textBoxInfo.Multiline = true;
             this.textBoxInfo.Name = "textBoxInfo";
             this.textBoxInfo.ReadOnly = true;
             this.textBoxInfo.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBoxInfo.Size = new System.Drawing.Size(917, 129);
+            this.textBoxInfo.Size = new System.Drawing.Size(917, 106);
             this.textBoxInfo.TabIndex = 3;
             // 
             // panel3
             // 
+            this.panel3.Controls.Add(this.labelMaxRange);
+            this.panel3.Controls.Add(this.labelMaxVal);
+            this.panel3.Controls.Add(this.labelMinVal);
             this.panel3.Controls.Add(this.checkBoxAutoScroll);
             this.panel3.Controls.Add(this.buttonFilterApply);
             this.panel3.Controls.Add(this.label2);
@@ -133,14 +150,27 @@
             this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel3.Location = new System.Drawing.Point(0, 0);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(917, 31);
+            this.panel3.Size = new System.Drawing.Size(917, 54);
             this.panel3.TabIndex = 2;
+            // 
+            // checkBoxAutoScroll
+            // 
+            this.checkBoxAutoScroll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkBoxAutoScroll.AutoSize = true;
+            this.checkBoxAutoScroll.Checked = true;
+            this.checkBoxAutoScroll.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxAutoScroll.Location = new System.Drawing.Point(837, 20);
+            this.checkBoxAutoScroll.Name = "checkBoxAutoScroll";
+            this.checkBoxAutoScroll.Size = new System.Drawing.Size(72, 16);
+            this.checkBoxAutoScroll.TabIndex = 3;
+            this.checkBoxAutoScroll.Text = "自动滚屏";
+            this.checkBoxAutoScroll.UseVisualStyleBackColor = true;
             // 
             // buttonFilterApply
             // 
-            this.buttonFilterApply.Location = new System.Drawing.Point(219, 4);
+            this.buttonFilterApply.Location = new System.Drawing.Point(219, 15);
             this.buttonFilterApply.Name = "buttonFilterApply";
-            this.buttonFilterApply.Size = new System.Drawing.Size(75, 23);
+            this.buttonFilterApply.Size = new System.Drawing.Size(75, 28);
             this.buttonFilterApply.TabIndex = 2;
             this.buttonFilterApply.Text = "应用";
             this.buttonFilterApply.UseVisualStyleBackColor = true;
@@ -149,7 +179,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(11, 9);
+            this.label2.Location = new System.Drawing.Point(11, 22);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(71, 12);
             this.label2.TabIndex = 1;
@@ -163,7 +193,7 @@
             0,
             0,
             65536});
-            this.numericUpDownR.Location = new System.Drawing.Point(84, 5);
+            this.numericUpDownR.Location = new System.Drawing.Point(84, 18);
             this.numericUpDownR.Minimum = new decimal(new int[] {
             1,
             0,
@@ -299,29 +329,32 @@
             this.plotView1.ZoomRectangleCursor = System.Windows.Forms.Cursors.SizeNWSE;
             this.plotView1.ZoomVerticalCursor = System.Windows.Forms.Cursors.SizeNS;
             // 
-            // checkBoxAutoScroll
+            // labelMinVal
             // 
-            this.checkBoxAutoScroll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBoxAutoScroll.AutoSize = true;
-            this.checkBoxAutoScroll.Checked = true;
-            this.checkBoxAutoScroll.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxAutoScroll.Location = new System.Drawing.Point(837, 8);
-            this.checkBoxAutoScroll.Name = "checkBoxAutoScroll";
-            this.checkBoxAutoScroll.Size = new System.Drawing.Size(72, 16);
-            this.checkBoxAutoScroll.TabIndex = 3;
-            this.checkBoxAutoScroll.Text = "自动滚屏";
-            this.checkBoxAutoScroll.UseVisualStyleBackColor = true;
+            this.labelMinVal.AutoSize = true;
+            this.labelMinVal.Location = new System.Drawing.Point(348, 13);
+            this.labelMinVal.Name = "labelMinVal";
+            this.labelMinVal.Size = new System.Drawing.Size(53, 12);
+            this.labelMinVal.TabIndex = 4;
+            this.labelMinVal.Text = "最小值：";
             // 
-            // buttonClean
+            // labelMaxVal
             // 
-            this.buttonClean.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonClean.Location = new System.Drawing.Point(837, 15);
-            this.buttonClean.Name = "buttonClean";
-            this.buttonClean.Size = new System.Drawing.Size(68, 29);
-            this.buttonClean.TabIndex = 6;
-            this.buttonClean.Text = "清空";
-            this.buttonClean.UseVisualStyleBackColor = true;
-            this.buttonClean.Click += new System.EventHandler(this.buttonClean_Click);
+            this.labelMaxVal.AutoSize = true;
+            this.labelMaxVal.Location = new System.Drawing.Point(348, 34);
+            this.labelMaxVal.Name = "labelMaxVal";
+            this.labelMaxVal.Size = new System.Drawing.Size(53, 12);
+            this.labelMaxVal.TabIndex = 5;
+            this.labelMaxVal.Text = "最大值：";
+            // 
+            // labelMaxRange
+            // 
+            this.labelMaxRange.AutoSize = true;
+            this.labelMaxRange.Location = new System.Drawing.Point(566, 22);
+            this.labelMaxRange.Name = "labelMaxRange";
+            this.labelMaxRange.Size = new System.Drawing.Size(65, 12);
+            this.labelMaxRange.TabIndex = 6;
+            this.labelMaxRange.Text = "最大幅度：";
             // 
             // Form1
             // 
@@ -374,6 +407,9 @@
         private System.Windows.Forms.Button buttonFilterApply;
         private System.Windows.Forms.CheckBox checkBoxAutoScroll;
         private System.Windows.Forms.Button buttonClean;
+        private System.Windows.Forms.Label labelMaxVal;
+        private System.Windows.Forms.Label labelMinVal;
+        private System.Windows.Forms.Label labelMaxRange;
     }
 }
 

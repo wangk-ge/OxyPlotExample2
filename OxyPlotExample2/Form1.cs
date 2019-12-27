@@ -1,4 +1,5 @@
 ﻿using OxyPlot;
+using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using System;
@@ -21,6 +22,8 @@ namespace OxyPlotExample2
         private long m_X = 0;
         private Timer m_refreshTimer = new Timer();
         private readonly int m_fps = 24; // 帧率
+        private double m_minVal = double.MaxValue; // 最小值
+        private double m_maxVal = double.MinValue; // 最大值
 
         private PlotModel m_plotModel;
 
@@ -125,6 +128,8 @@ namespace OxyPlotExample2
             };
             m_plotModel.Series.Add(series);
 
+            //LineAnnotation
+
             plotView1.Model = m_plotModel;
 
             /* 通过传感器获取数据 */
@@ -188,6 +193,9 @@ namespace OxyPlotExample2
             var xAxis = m_plotModel.Axes[0];
             xAxis.Reset();
 
+            m_minVal = double.MaxValue; // 最小值
+            m_maxVal = double.MinValue; // 最大值
+
             m_plotModel.InvalidatePlot(true);
         }
 
@@ -200,6 +208,26 @@ namespace OxyPlotExample2
             lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)val)));
 
             m_X++;
+
+            /* 统计最小值和最大值 */
+            bool bChange = false;
+            if (val < m_minVal)
+            {
+                m_minVal = val;
+                this.BeginInvoke(new Action<Form1>((obj) => { labelMinVal.Text = "最小值：" + m_minVal.ToString(); }), this);
+                bChange = true;
+            }
+            if (val > m_maxVal)
+            {
+                m_maxVal = val;
+                this.BeginInvoke(new Action<Form1>((obj) => { labelMaxVal.Text = "最大值：" + m_maxVal.ToString(); }), this);
+                bChange = true;
+            }
+
+            if (bChange)
+            {
+                this.BeginInvoke(new Action<Form1>((obj) => { labelMaxRange.Text = "最大幅度：" + (m_maxVal - m_minVal).ToString(); }), this);
+            }
         }
 
         private void ApplyFilter()
