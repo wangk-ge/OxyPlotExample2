@@ -22,10 +22,17 @@ namespace OxyPlotExample2
         private long m_X = 0;
         private Timer m_refreshTimer = new Timer();
         private readonly int m_fps = 24; // 帧率
+        /* 统计数据 */
         private double m_minVal = double.MaxValue; // 最小值
         private double m_maxVal = double.MinValue; // 最大值
+        private double m_sumVal = 0; // 求和值
+        private double m_minFilterVal = double.MaxValue; // 滤波后最小值
+        private double m_maxFilterVal = double.MinValue; // 滤波后最大值
+        private double m_sumFilterVal = 0; // 滤波后求和值
 
         private PlotModel m_plotModel;
+        private LineAnnotation m_cursor1Annotation; // 光标1
+        private LineAnnotation m_cursor2Annotation; // 光标2
 
         public Form1()
         {
@@ -106,6 +113,7 @@ namespace OxyPlotExample2
             };
             m_plotModel.Axes.Add(m_yAxis);
 
+            // 原始数据
             var series = new LineSeries()
             {
                 Color = OxyColors.Green,
@@ -117,6 +125,7 @@ namespace OxyPlotExample2
             };
             m_plotModel.Series.Add(series);
 
+            // 滤波数据
             series = new LineSeries()
             {
                 Color = OxyColors.Red,
@@ -128,9 +137,53 @@ namespace OxyPlotExample2
             };
             m_plotModel.Series.Add(series);
 
-            //LineAnnotation
+            /* 光标1 */
+            m_cursor1Annotation = new LineAnnotation()
+            {
+                Color = OxyColors.Red,
+                X = 0,
+                LineStyle = LineStyle.Solid,
+                Type = LineAnnotationType.Vertical,
+                Text = "Cursor1"
+            };
+            m_plotModel.Annotations.Add(m_cursor1Annotation);
+
+            /* 光标2 */
+            m_cursor2Annotation = new LineAnnotation()
+            {
+                Color = OxyColors.Red,
+                X = 0,
+                LineStyle = LineStyle.Solid,
+                Type = LineAnnotationType.Vertical,
+                Text = "Cursor2"
+            };
+            m_plotModel.Annotations.Add(m_cursor2Annotation);
 
             plotView1.Model = m_plotModel;
+
+            numericUpDownCursor1.Value = (decimal)m_cursor1Annotation.X;
+            numericUpDownCursor2.Value = (decimal)m_cursor2Annotation.X;
+            numericUpDownCursor1.Maximum = decimal.MaxValue;
+            numericUpDownCursor2.Maximum = decimal.MaxValue;
+#if false
+            var commandLeft = new DelegatePlotCommand<OxyMouseDownEventArgs>((v, c, a) =>
+            {
+                a.Handled = true;
+                if (v.ActualModel.Series.Count > 0)
+                {
+                    var series2 = v.ActualModel.Series[0] as LineSeries;
+                    var point = series2.InverseTransform(a.Position);
+                    if (m_plotModel.Annotations.Count > 0 && m_plotModel.Annotations[0] is LineAnnotation)
+                    {
+                        var lineAnnotation = m_plotModel.Annotations[0] as LineAnnotation;
+                        lineAnnotation.X = point.X;
+                        lineAnnotation.Text = point.Y.ToString("G3");
+                        m_plotModel.InvalidatePlot(false);
+                    }
+                }
+            });
+            plotView1.ActualController.BindMouseDown(OxyMouseButton.Left, commandLeft);
+#endif
 
             /* 通过传感器获取数据 */
             m_flowSensor.m_frameDecoder.WaveDataRespRecved += new FrameDecoder.WaveDataRecvHandler((byte channel, double value) => {
@@ -170,6 +223,101 @@ namespace OxyPlotExample2
             m_kalmanFilter.R = (float)decimal.ToDouble(numericUpDownR.Value);
         }
 
+        /* 重置统计数据 */
+        private void ResetStatisticalData()
+        {
+            /* 清除数据 */
+            m_minVal = double.MaxValue; // 最小值
+            m_maxVal = double.MinValue; // 最大值
+            m_sumVal = 0; // 求和值
+            m_minFilterVal = double.MaxValue; // 滤波后最小值
+            m_maxFilterVal = double.MinValue; // 滤波后最大值
+            m_sumFilterVal = 0; // 滤波后求和值
+
+            /* 清除显示 */
+            this.BeginInvoke(new Action<Form1>((obj) => {
+                /* 样本数 */
+                textBoxNum.Text = string.Empty;
+                textBoxFilterNum.Text = string.Empty;
+                /* 求和值 */
+                textBoxSum.Text = string.Empty;
+                textBoxFilterSum.Text = string.Empty;
+                /* 平均值 */
+                textBoxAvg.Text = string.Empty;
+                textBoxFilterAvg.Text = string.Empty;
+                /* 最小值 */
+                textBoxMin.Text = string.Empty;
+                textBoxFilterMin.Text = string.Empty;
+                /* 最大值 */
+                textBoxMax.Text = string.Empty;
+                textBoxFilterMax.Text = string.Empty;
+                /* 波动范围 */
+                textBoxRange.Text = string.Empty;
+                textBoxFilterRange.Text = string.Empty;
+                /* 光标自动选择数据范围 */
+                CursorAutoSelect();
+            }), this);
+        }
+
+        /* 更新统计数据 */
+        private void UpdateStatisticalData(double val, double filterVal, long num)
+        {
+            /* 求和值 */
+            m_sumVal += val;
+            m_sumFilterVal += filterVal;
+
+            /* 求平均值 */
+            double avgVal = m_sumVal / num;
+            double avgFilterVal = m_sumFilterVal / num;
+
+            /* 统计最小值 */
+            if (val < m_minVal)
+            {
+                m_minVal = val;
+            }
+            if (filterVal < m_minFilterVal)
+            {
+                m_minFilterVal = filterVal;
+            }
+            /* 统计最大值 */
+            if (val > m_maxVal)
+            {
+                m_maxVal = val;
+            }
+            if (filterVal > m_maxFilterVal)
+            {
+                m_maxFilterVal = filterVal;
+            }
+
+            /* 计算波动范围 */
+            double rangeVal = m_maxVal - m_minVal;
+            double rangeFilterVal = m_maxFilterVal - m_minFilterVal;
+
+            /* 更新显示 */
+            this.BeginInvoke(new Action<Form1>((obj) => {
+                /* 样本数 */
+                textBoxNum.Text = num.ToString();
+                textBoxFilterNum.Text = num.ToString();
+                /* 求和值 */
+                textBoxSum.Text = m_sumVal.ToString();
+                textBoxFilterSum.Text = m_sumFilterVal.ToString();
+                /* 平均值 */
+                textBoxAvg.Text = avgVal.ToString();
+                textBoxFilterAvg.Text = avgFilterVal.ToString();
+                /* 最小值 */
+                textBoxMin.Text = m_minVal.ToString();
+                textBoxFilterMin.Text = m_minFilterVal.ToString();
+                /* 最大值 */
+                textBoxMax.Text = m_maxVal.ToString();
+                textBoxFilterMax.Text = m_maxFilterVal.ToString();
+                /* 波动范围 */
+                textBoxRange.Text = rangeVal.ToString();
+                textBoxFilterRange.Text = rangeFilterVal.ToString();
+                /* 光标自动选择数据范围 */
+                CursorAutoSelect();
+            }), this);
+        }
+
         private void ClearAll()
         {
             var lineSer1 = plotView1.Model.Series[0] as LineSeries;
@@ -193,11 +341,8 @@ namespace OxyPlotExample2
             var xAxis = m_plotModel.Axes[0];
             xAxis.Reset();
 
-            m_minVal = double.MaxValue; // 最小值
-            m_maxVal = double.MinValue; // 最大值
-            labelMinVal.Text = "最小值：0";
-            labelMaxVal.Text = "最大值：0";
-            labelMaxRange.Text = "最大幅度：0";
+            /* 重置统计数据 */
+            ResetStatisticalData();
 
             m_plotModel.InvalidatePlot(true);
         }
@@ -207,29 +352,16 @@ namespace OxyPlotExample2
             var lineSer1 = plotView1.Model.Series[0] as LineSeries;
             lineSer1.Points.Add(new DataPoint(m_X, val));
 
+            double filterVal = m_kalmanFilter.Input((float)val); // 执行滤波
             var lineSer2 = plotView1.Model.Series[1] as LineSeries;
-            lineSer2.Points.Add(new DataPoint(m_X, m_kalmanFilter.Input((float)val)));
+            lineSer2.Points.Add(new DataPoint(m_X, filterVal));
 
             m_X++;
 
-            /* 统计最小值和最大值 */
-            bool bChange = false;
-            if (val < m_minVal)
-            {
-                m_minVal = val;
-                this.BeginInvoke(new Action<Form1>((obj) => { labelMinVal.Text = "最小值：" + m_minVal.ToString(); }), this);
-                bChange = true;
-            }
-            if (val > m_maxVal)
-            {
-                m_maxVal = val;
-                this.BeginInvoke(new Action<Form1>((obj) => { labelMaxVal.Text = "最大值：" + m_maxVal.ToString(); }), this);
-                bChange = true;
-            }
-
-            if (bChange)
-            {
-                this.BeginInvoke(new Action<Form1>((obj) => { labelMaxRange.Text = "最大幅度：" + (m_maxVal - m_minVal).ToString(); }), this);
+            if (checkBoxAutoCursor.Checked)
+            { // 已配置光标自动选择功能
+                /* 更新统计数据 */
+                UpdateStatisticalData(val, filterVal, lineSer1.Points.Count);
             }
         }
 
@@ -260,6 +392,17 @@ namespace OxyPlotExample2
             this.textBoxInfo.AppendText($"Sned: {cmd} \r\n");
             string cmdResp = await m_flowSensor.ExcuteCmdAsync(cmd, 2000);
             this.textBoxInfo.AppendText($"Revc: {cmdResp} \r\n");
+        }
+
+        /* 光标自动选择数据范围 */
+        private void CursorAutoSelect()
+        {
+            m_cursor1Annotation.X = 0;
+            m_cursor2Annotation.X = m_X;
+            m_plotModel.InvalidatePlot(false);
+
+            numericUpDownCursor1.Value = (decimal)m_cursor1Annotation.X;
+            numericUpDownCursor2.Value = (decimal)m_cursor2Annotation.X;
         }
 
         private void buttonSend_Click(object sender, EventArgs e)
@@ -460,6 +603,171 @@ namespace OxyPlotExample2
             if (e.KeyCode == Keys.Enter)
             {
                 SendCmd(this.textBoxCmd.Text);
+            }
+        }
+
+        private void buttonResetScale_Click(object sender, EventArgs e)
+        {
+            m_plotModel.ResetAllAxes();
+            m_plotModel.InvalidatePlot(false);
+        }
+
+        private void numericUpDownCursor1_ValueChanged(object sender, EventArgs e)
+        {
+            if (numericUpDownCursor1.Value != (decimal)m_cursor1Annotation.X)
+            {
+                m_cursor1Annotation.X = (double)numericUpDownCursor1.Value;
+                m_plotModel.InvalidatePlot(false);
+            }
+        }
+
+        private void numericUpDownCursor2_ValueChanged(object sender, EventArgs e)
+        {
+            if (numericUpDownCursor2.Value != (decimal)m_cursor2Annotation.X)
+            {
+                m_cursor2Annotation.X = (double)numericUpDownCursor2.Value;
+                m_plotModel.InvalidatePlot(false);
+            }
+        }
+
+        private void buttonCursorSelectAll_Click(object sender, EventArgs e)
+        {
+            /* 光标自动选择数据范围 */
+            CursorAutoSelect();
+        }
+
+        private void buttonStatistical_Click(object sender, EventArgs e)
+        {
+            var dataSer = plotView1.Model.Series[0] as LineSeries;
+            var dataPoints = dataSer.Points;
+
+            if (0 == dataPoints.Count)
+            {
+                return;
+            }
+
+            int cursorStart;
+            int cursorEnd;
+            if (m_cursor1Annotation.X > m_cursor2Annotation.X)
+            {
+                cursorStart = (int)m_cursor2Annotation.X;
+                cursorEnd = (int)m_cursor1Annotation.X;
+            }
+            else //if (m_cursor1Annotation.X <= m_cursor2Annotation.X)
+            {
+                cursorStart = (int)m_cursor1Annotation.X;
+                cursorEnd = (int)m_cursor2Annotation.X;
+            }
+
+            if (cursorStart >= dataPoints.Count)
+            {
+                /* 样本数 */
+                textBoxNum.Text = string.Empty;
+                textBoxFilterNum.Text = string.Empty;
+                /* 求和值 */
+                textBoxSum.Text = string.Empty;
+                textBoxFilterSum.Text = string.Empty;
+                /* 平均值 */
+                textBoxAvg.Text = string.Empty;
+                textBoxFilterAvg.Text = string.Empty;
+                /* 最小值 */
+                textBoxMin.Text = string.Empty;
+                textBoxFilterMin.Text = string.Empty;
+                /* 最大值 */
+                textBoxMax.Text = string.Empty;
+                textBoxFilterMax.Text = string.Empty;
+                /* 波动范围 */
+                textBoxRange.Text = string.Empty;
+                textBoxFilterRange.Text = string.Empty;
+                return;
+            }
+
+            cursorEnd = (cursorEnd < dataPoints.Count) ? cursorEnd : (dataPoints.Count - 1);
+
+            var filterSer = plotView1.Model.Series[1] as LineSeries;
+            var filterPoints = filterSer.Points;
+
+            double minVal = double.MaxValue; // 最小值
+            double maxVal = double.MinValue; // 最大值
+            double sumVal = 0; // 求和值
+            double minFilterVal = double.MaxValue; // 滤波后最小值
+            double maxFilterVal = double.MinValue; // 滤波后最大值
+            double sumFilterVal = 0; // 滤波后求和值
+            for (int i = cursorStart; i <= cursorEnd; ++i)
+            {
+                var val = dataPoints[i].Y;
+                var filterVal = filterPoints[i].Y;
+
+                /* 求和值 */
+                sumVal += val;
+                sumFilterVal += filterVal;
+
+                /* 统计最小值 */
+                if (val < minVal)
+                {
+                    minVal = val;
+                }
+                if (filterVal < minFilterVal)
+                {
+                    minFilterVal = filterVal;
+                }
+                /* 统计最大值 */
+                if (val > maxVal)
+                {
+                    maxVal = val;
+                }
+                if (filterVal > maxFilterVal)
+                {
+                    maxFilterVal = filterVal;
+                }
+            }
+
+            /* 计算样本数 */
+            int num = cursorEnd - cursorStart + 1;
+
+            /* 计算平均值 */
+            double avgVal = sumVal / num;
+            double avgFilterVal = sumFilterVal / num;
+
+            /* 计算波动范围 */
+            double rangeVal = maxVal = minVal;
+            double rangeFilterVal = maxFilterVal = minFilterVal;
+
+            /* 样本数 */
+            textBoxNum.Text = num.ToString();
+            textBoxFilterNum.Text = num.ToString();
+            /* 求和值 */
+            textBoxSum.Text = sumVal.ToString();
+            textBoxFilterSum.Text = sumFilterVal.ToString();
+            /* 平均值 */
+            textBoxAvg.Text = avgVal.ToString();
+            textBoxFilterAvg.Text = avgFilterVal.ToString();
+            /* 最小值 */
+            textBoxMin.Text = minVal.ToString();
+            textBoxFilterMin.Text = minFilterVal.ToString();
+            /* 最大值 */
+            textBoxMax.Text = maxVal.ToString();
+            textBoxFilterMax.Text = maxFilterVal.ToString();
+            /* 波动范围 */
+            textBoxRange.Text = rangeVal.ToString();
+            textBoxFilterRange.Text = rangeFilterVal.ToString();
+        }
+
+        private void checkBoxAutoCursor_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxAutoCursor.Checked)
+            {
+                buttonStatistical.Enabled = false;
+                numericUpDownCursor1.Enabled = false;
+                numericUpDownCursor2.Enabled = false;
+                /* 光标自动选择数据范围 */
+                CursorAutoSelect();
+            }
+            else
+            {
+                buttonStatistical.Enabled = true;
+                numericUpDownCursor1.Enabled = true;
+                numericUpDownCursor2.Enabled = true;
             }
         }
     }
