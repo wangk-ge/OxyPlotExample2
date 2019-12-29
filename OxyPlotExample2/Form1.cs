@@ -31,8 +31,8 @@ namespace OxyPlotExample2
         private double m_sumFilterVal = 0; // 滤波后求和值
 
         private PlotModel m_plotModel;
-        private LineAnnotation m_cursor1Annotation; // 光标1
-        private LineAnnotation m_cursor2Annotation; // 光标2
+        private LineAnnotation m_cursor1Annotation; // 游标1
+        private LineAnnotation m_cursor2Annotation; // 游标2
 
         public Form1()
         {
@@ -137,7 +137,7 @@ namespace OxyPlotExample2
             };
             m_plotModel.Series.Add(series);
 
-            /* 光标1 */
+            /* 游标1 */
             m_cursor1Annotation = new LineAnnotation()
             {
                 Color = OxyColors.Red,
@@ -148,7 +148,7 @@ namespace OxyPlotExample2
             };
             m_plotModel.Annotations.Add(m_cursor1Annotation);
 
-            /* 光标2 */
+            /* 游标2 */
             m_cursor2Annotation = new LineAnnotation()
             {
                 Color = OxyColors.Red,
@@ -254,7 +254,7 @@ namespace OxyPlotExample2
                 /* 波动范围 */
                 textBoxRange.Text = string.Empty;
                 textBoxFilterRange.Text = string.Empty;
-                /* 光标自动选择数据范围 */
+                /* 游标自动选择数据范围 */
                 CursorAutoSelect();
             }), this);
         }
@@ -313,7 +313,7 @@ namespace OxyPlotExample2
                 /* 波动范围 */
                 textBoxRange.Text = rangeVal.ToString();
                 textBoxFilterRange.Text = rangeFilterVal.ToString();
-                /* 光标自动选择数据范围 */
+                /* 游标自动选择数据范围 */
                 CursorAutoSelect();
             }), this);
         }
@@ -359,7 +359,7 @@ namespace OxyPlotExample2
             m_X++;
 
             if (checkBoxAutoCursor.Checked)
-            { // 已配置光标自动选择功能
+            { // 已配置游标自动选择功能
                 /* 更新统计数据 */
                 UpdateStatisticalData(val, filterVal, lineSer1.Points.Count);
             }
@@ -394,7 +394,7 @@ namespace OxyPlotExample2
             this.textBoxInfo.AppendText($"Revc: {cmdResp} \r\n");
         }
 
-        /* 光标自动选择数据范围 */
+        /* 游标自动选择数据范围 */
         private void CursorAutoSelect()
         {
             m_cursor1Annotation.X = 0;
@@ -632,7 +632,7 @@ namespace OxyPlotExample2
 
         private void buttonCursorSelectAll_Click(object sender, EventArgs e)
         {
-            /* 光标自动选择数据范围 */
+            /* 游标自动选择数据范围 */
             CursorAutoSelect();
         }
 
@@ -760,7 +760,7 @@ namespace OxyPlotExample2
                 buttonStatistical.Enabled = false;
                 numericUpDownCursor1.Enabled = false;
                 numericUpDownCursor2.Enabled = false;
-                /* 光标自动选择数据范围 */
+                /* 游标自动选择数据范围 */
                 CursorAutoSelect();
             }
             else

@@ -253,7 +253,7 @@
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(59, 12);
             this.label12.TabIndex = 13;
-            this.label12.Text = "光标2位置";
+            this.label12.Text = "游标2位置";
             // 
             // label11
             // 
@@ -263,7 +263,7 @@
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(59, 12);
             this.label11.TabIndex = 13;
-            this.label11.Text = "光标1位置";
+            this.label11.Text = "游标1位置";
             // 
             // buttonResetScale
             // 
@@ -454,7 +454,7 @@
             this.checkBoxAutoCursor.Name = "checkBoxAutoCursor";
             this.checkBoxAutoCursor.Size = new System.Drawing.Size(72, 16);
             this.checkBoxAutoCursor.TabIndex = 3;
-            this.checkBoxAutoCursor.Text = "自动光标";
+            this.checkBoxAutoCursor.Text = "自动游标";
             this.checkBoxAutoCursor.UseVisualStyleBackColor = true;
             this.checkBoxAutoCursor.CheckedChanged += new System.EventHandler(this.checkBoxAutoCursor_CheckedChanged);
             // 
