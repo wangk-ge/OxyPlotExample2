@@ -763,7 +763,7 @@
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.panel2);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "WaveTool";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
