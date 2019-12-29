@@ -144,7 +144,7 @@ namespace OxyPlotExample2
                 X = 0,
                 LineStyle = LineStyle.Solid,
                 Type = LineAnnotationType.Vertical,
-                Text = "Cursor1"
+                Text = "1"
             };
             m_plotModel.Annotations.Add(m_cursor1Annotation);
 
@@ -155,7 +155,7 @@ namespace OxyPlotExample2
                 X = 0,
                 LineStyle = LineStyle.Solid,
                 Type = LineAnnotationType.Vertical,
-                Text = "Cursor2"
+                Text = "2"
             };
             m_plotModel.Annotations.Add(m_cursor2Annotation);
 
