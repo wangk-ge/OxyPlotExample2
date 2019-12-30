@@ -163,7 +163,6 @@
             this.textBoxInfo.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.textBoxInfo.Size = new System.Drawing.Size(1265, 86);
             this.textBoxInfo.TabIndex = 5;
-            this.textBoxInfo.Text = "-";
             // 
             // tableLayoutPanel1
             // 

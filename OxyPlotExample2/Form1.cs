@@ -290,8 +290,8 @@ namespace OxyPlotExample2
             }
 
             /* 计算波动范围 */
-            double rangeVal = m_maxVal - m_minVal;
-            double rangeFilterVal = m_maxFilterVal - m_minFilterVal;
+            double rangeVal = (m_maxVal - m_minVal);
+            double rangeFilterVal = (m_maxFilterVal - m_minFilterVal);
 
             /* 更新显示 */
             this.BeginInvoke(new Action<Form1>((obj) => {
@@ -730,8 +730,8 @@ namespace OxyPlotExample2
             double avgFilterVal = sumFilterVal / num;
 
             /* 计算波动范围 */
-            double rangeVal = maxVal = minVal;
-            double rangeFilterVal = maxFilterVal = minFilterVal;
+            double rangeVal = (maxVal - minVal);
+            double rangeFilterVal = (maxFilterVal - minFilterVal);
 
             /* 样本数 */
             textBoxNum.Text = num.ToString();
